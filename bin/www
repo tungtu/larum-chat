@@ -32,7 +32,8 @@ io.on('connection', onConnection);
 function onConnection(socket){
     console.log("connection " + socket.id);
     socket.on('send-message', function (data) {
-        io.sockets.emit('send-message-to-all', data);
+        socket.broadcast.emit('send-message-to-all', data);
+        socket.emit('send-message-to-me', data);
     });
 }
 
