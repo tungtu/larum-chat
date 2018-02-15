@@ -28,18 +28,50 @@ var server = http.createServer(app);
 var io = require('socket.io')(server);
 
 io.on('connection', onConnection);
-var history = [];
+
+/**
+* Store Mongodb
+* */
+var Messages = require('../models/messages');
+
+var mongoose = require('mongoose');
+
+var uri = "mongodb://root:YavWodNetshyip7@ds235708.mlab.com:35708/larum";
+
+mongoose.connect(uri);
+
+var db = mongoose.connection;
+
+db.on('error', console.error.bind(console, 'connection error:'));
+
+db.once('open', function() {
+	console.log('Mongodb connected ');
+});
 
 function onConnection(socket){
     console.log("connection " + socket.id);
     socket.on('history-messages', function () {
-        socket.emit('send-history-message-to-me', history);
+	    Messages.find({}, function(err, result) {
+			if (err) throw err;
+			if (result) {
+				socket.emit('send-history-message-to-me', result);
+			}
+		});
+
     });
 
     socket.on('send-message', function (data) {
-        history.push(data);
-        socket.broadcast.emit('send-message-to-all', data);
-        socket.emit('send-message-to-me', data);
+        new Messages({
+		    'username': data.username,
+		    'message': data.message
+	    }).save(function(err, result) {
+		    if (err) throw err;
+		    if(result) {
+			    socket.broadcast.emit('send-message-to-all', result);
+			    socket.emit('send-message-to-me', result);
+		    }
+	    });
+
     });
 }
 
