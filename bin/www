@@ -28,10 +28,16 @@ var server = http.createServer(app);
 var io = require('socket.io')(server);
 
 io.on('connection', onConnection);
+var history = [];
 
 function onConnection(socket){
     console.log("connection " + socket.id);
+    socket.on('history-messages', function () {
+        socket.emit('send-history-message-to-me', history);
+    });
+
     socket.on('send-message', function (data) {
+        history.push(data);
         socket.broadcast.emit('send-message-to-all', data);
         socket.emit('send-message-to-me', data);
     });

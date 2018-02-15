@@ -10,6 +10,20 @@ var users = require('./routes/users');
 
 var app = express();
 
+//connect mongodb
+var mongoose = require('mongoose');
+
+// var uri = "mongodb://root:123@cluster0-shard-00-00-ntxsv.mongodb.net:27017,cluster0-shard-00-01-ntxsv.mongodb.net:27017,cluster0-shard-00-02-ntxsv.mongodb.net:27017/qlsv?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin"
+//mlab
+var uri = "mongodb://root:YavWodNetshyip7@ds235708.mlab.com:35708/larum";
+
+mongoose.connect(uri);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+    console.log('Mongodb connected ');
+});
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
