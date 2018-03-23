@@ -13,7 +13,7 @@ var http = require('http');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.PORT || '3001');
 app.set('port', port);
 
 /**
@@ -36,6 +36,8 @@ var Messages = require('../models/messages');
 
 var mongoose = require('mongoose');
 
+// var uri = "mongodb://localhost:27017/larum-chat";
+
 var uri = "mongodb://root:YavWodNetshyip7@ds235708.mlab.com:35708/larum";
 
 mongoose.connect(uri);
@@ -47,7 +49,16 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
 	console.log('Mongodb connected ');
 });
+// new Messages({
+// 	'username': "asdasd",
+// 	'message': "asdsadsa"
+// }).save(function(err, result) {
+// 	if (err) throw err;
+// 	if(result) {
+// 	}
+// });
 
+var user_online = [];
 function onConnection(socket){
     console.log("connection " + socket.id);
     socket.on('history-messages', function () {
@@ -73,6 +84,21 @@ function onConnection(socket){
 	    });
 
     });
+	socket.on('send-notify-online', function (data) {
+		user_online.push(data.username);
+		socket.username = data.username;
+		if (user_online.length > 0) {
+			io.sockets.emit('send-list-user-online', user_online);
+		}
+	});
+
+
+
+	socket.on('disconnect', function () {
+		user_online.splice(user_online.indexOf(socket.username),1);
+		socket.broadcast.emit('send-list-user-online', user_online);
+		// console.log("disconnection " + socket.username);
+	})
 }
 
 /**
